@@ -1,0 +1,52 @@
+---
+title: "EMD_Zad1"
+author: "Wojciech Kupaj/Filip Bończyk"
+date: "29 10 2020"
+output:
+    md_document:
+        variant: markdown_github
+---
+
+## Wczytywanie danych i ładowanie bibliotek
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+```
+```{r, cache=TRUE}
+library(EDAWR)
+data_source<-tb
+```
+
+## Krótkie podsumowanie danych w zbiorze
+```{r summary}
+knitr::kable(summary(data_source))
+```
+
+## Liczbę zachorowań z podziałem na płeć
+```{r, message=FALSE}
+t_date<- group_by(data_source, sex)
+
+summarize(t_date, count=sum(child + adult + 	elderly, na.rm=TRUE))
+```   
+## Wykres liniowy sumarycznej liczby zachorowań wśród dzieci, dorosłych i osób starszych w kolejnych latach
+```{r ,message=FALSE}
+t_date<- group_by(data_source, year)
+
+a <- summarize(t_date, count=sum(child + adult + elderly, na.rm=TRUE))
+plot(a, ylab="count",type="l",col="red")
+
+```  
+
+## Wykres liniowy sumarycznej liczby zachorowań wśród dzieci, dorosłych i osób starszych w kolejnych latach z podzialem na kraje 
+
+```{r, message=FALSE}
+
+new_data<-data_source %>%
+  group_split(country)
+
+for(i in 1:length(new_data)) {
+  a <- new_data[[i]]%>% group_by(year) %>%
+  summarise(a_sum=sum(child + adult + elderly, na.rm=TRUE)) 
+  plot(a, ylab="count",type="l",col=i,main=new_data[[i]][1,"country"])
+}
+``` 
