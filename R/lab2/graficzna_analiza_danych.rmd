@@ -1,0 +1,59 @@
+---
+title: "Graficzna analiza danych"
+author: Filip Bończyk, Wojciech Kupaj
+date: 31.10.2020
+output:
+    md_document:
+        variant: markdown_github
+---
+
+
+```{r packages, include = FALSE}
+library(dplyr)
+library(ggplot2)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Histogramy zmiennej _depth_
+
+### Kolory
+```{r, warning = FALSE}
+ggplot(diamonds, aes(x = depth, fill = cut)) +
+  geom_histogram(binwidth = 0.2) +
+  xlim(55, 70)
+```
+
+### Panele
+```{r, warning = FALSE}
+ggplot(diamonds, aes(x = depth)) +
+  geom_histogram(binwidth = 0.2) +
+  xlim(55, 70) +
+  facet_grid(. ~ cut)
+```
+
+## Histogramy zmiennej _price_
+
+### Kolory
+```{r, warning = FALSE}
+ggplot(diamonds, aes(x = price, fill = cut)) +
+  geom_histogram(binwidth = 75) +
+  xlim(250, 19000)
+```
+
+### Panele
+```{r, warning = FALSE}
+ggplot(diamonds, aes(x = price)) +
+  geom_histogram(binwidth = 75) +
+  xlim(250, 19000) +
+  facet_grid(. ~ cut)
+```
+
+## Relacja między _carat_ i _price_
+
+```{r, warning = FALSE}
+
+ggplot(diamonds, aes(x = carat, y = price)) +
+  geom_point() +
+  geom_smooth()
+```
