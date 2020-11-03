@@ -1,0 +1,113 @@
+---
+title: Uczenie maszynowe w R - klasyfikacja"
+author: Filip Bończyk, Wojciech Kupaj
+date: 02.11.2020
+output:
+    md_document:
+        variant: markdown_github
+---
+
+# Uczenie maszynowe w R - klasyfikacja
+
+```{r setup, include = FALSE}
+library(caret)
+library(modeldata)
+```
+
+## Ładowanie danych
+```{r}
+data(mlc_churn)
+churnData <- data.frame(mlc_churn)
+```
+
+## Podział zbioru
+```{r}
+set.seed(23)
+inTraining <- createDataPartition(
+  y = churnData$churn,
+  p = 0.75,
+  list = FALSE
+)
+
+training_set <- churnData[inTraining,]
+test_set <- churnData[-inTraining,]
+```
+
+## Klasyfikatory
+
+```{r}
+ctrl <- trainControl(
+  method = "repeatedcv",
+  number = 10,
+  repeats = 10,
+  classProbs = TRUE,
+  summaryFunction = twoClassSummary
+)
+```
+
+###  CART
+```{r}
+
+cartGrid <- expand.grid(cp = seq(from = 0.0001, to = 0.01, length = 30))
+
+cartFit <- train(
+  churn ~ .,
+  data = training_set,
+  method = "rpart",
+  trControl = ctrl,
+  tuneGrid = cartGrid,
+  metric = "ROC"
+  # Preprocessing nie jest wymagany
+)
+
+cartFit
+```
+
+```{r}
+cartPred <- predict(cartFit, newdata = test_set)
+confusionMatrix(data = cartPred, test_set$churn)
+```
+
+### kNN
+```{r}
+knnGrid <- expand.grid(k = seq(from = 1, to = 13, by = 2))
+
+knnFit <- train(
+  churn ~ .,
+  data = training_set,
+  method = "knn",
+  trControl = ctrl,
+  tuneGrid = knnGrid,
+  preProc = c("center", "scale"),
+  metric = "ROC"
+)
+
+knnFit
+```
+
+```{r}
+knnPred <- predict(knnFit, newdata = test_set)
+confusionMatrix(data = knnPred, test_set$churn)
+```
+
+## Porównanie
+
+```{r}
+resamps <- resamples(list(CART = cartFit,
+                          KNN = knnFit))
+```
+
+```{r}
+theme1 <- trellis.par.get()
+theme1$plot.symbol$col = rgb(.2, .2, .2, .4)
+theme1$plot.symbol$pch = 16
+theme1$plot.line$col = rgb(1, 0, 0, .7)
+theme1$plot.line$lwd <- 2
+trellis.par.set(theme1)
+bwplot(resamps, layout = c(3, 1))
+```
+
+
+
+
+
