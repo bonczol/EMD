@@ -225,8 +225,10 @@ trellis.par.set(theme1)
 bwplot(resamps, layout = c(3, 1))
 ```
 
-![](/home/filip/IdeaProjects/EMD/R/lab3/uczenie_maszynowe_files/figure-markdown_github/unnamed-chunk-9-1.png)
-\#\# Zad 2 - regresja
+![](./uczenie_maszynowe_files/figure-markdown_github/unnamed-chunk-9-1.png)
+
+Zad 2 - regresja
+----------------
 
 ### Podział zbioru
 
@@ -261,8 +263,9 @@ featurePlot(x = df_diamonds[, c("carat", "depth", "table", "x", "y", "z")],
             span = .5)
 ```
 
-![](/home/filip/IdeaProjects/EMD/R/lab3/uczenie_maszynowe_files/figure-markdown_github/unnamed-chunk-11-1.png)
-\#\#\# Regresor
+![](./uczenie_maszynowe_files/figure-markdown_github/unnamed-chunk-11-1.png)
+
+### Regresor
 
 ``` r
 glmnetCtrl <- trainControl(

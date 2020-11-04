@@ -111,6 +111,7 @@ theme1$plot.line$lwd <- 2
 trellis.par.set(theme1)
 bwplot(resamps, layout = c(3, 1))
 ```
+
 ## Zad 2 - regresja
 
 ### Podział zbioru
@@ -146,6 +147,7 @@ featurePlot(x = df_diamonds[, c("carat", "depth", "table", "x", "y", "z")],
             span = .5)
 ```
 ### Regresor
+
 ```{r}
 glmnetCtrl <- trainControl(
   method = "repeatedcv",
