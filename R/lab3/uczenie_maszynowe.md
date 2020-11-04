@@ -1,16 +1,17 @@
-Uczenie maszynowe w R - klasyfikacja
-====================================
+Uczenie maszynowe w R I
+=======================
 
-Ładowanie danych
-----------------
+Zad 1 - klasyfikacja
+--------------------
+
+### Ładowanie danych
 
 ``` r
 data(mlc_churn)
 churnData <- data.frame(mlc_churn)
 ```
 
-Podział zbioru
---------------
+### Podział zbioru
 
 ``` r
 set.seed(23)
@@ -24,8 +25,7 @@ training_set <- churnData[inTraining,]
 test_set <- churnData[-inTraining,]
 ```
 
-Klasyfikatory
--------------
+### Klasyfikatory
 
 ``` r
 ctrl <- trainControl(
@@ -37,7 +37,7 @@ ctrl <- trainControl(
 )
 ```
 
-### CART
+#### CART
 
 ``` r
 cartGrid <- expand.grid(cp = seq(from = 0.0001, to = 0.01, length = 30))
@@ -134,7 +134,7 @@ confusionMatrix(data = cartPred, test_set$churn)
     ##        'Positive' Class : yes             
     ## 
 
-### kNN
+#### kNN
 
 ``` r
 knnGrid <- expand.grid(k = seq(from = 1, to = 13, by = 2))
@@ -208,8 +208,7 @@ confusionMatrix(data = knnPred, test_set$churn)
     ##        'Positive' Class : yes             
     ## 
 
-Porównanie
-----------
+### Porównanie
 
 ``` r
 resamps <- resamples(list(CART = cartFit,
@@ -227,3 +226,90 @@ bwplot(resamps, layout = c(3, 1))
 ```
 
 ![](/home/filip/IdeaProjects/EMD/R/lab3/uczenie_maszynowe_files/figure-markdown_github/unnamed-chunk-9-1.png)
+\#\# Zad 2 - regresja
+
+### Podział zbioru
+
+``` r
+data(diamonds)
+df_diamonds <- data.frame(diamonds)
+
+inTraining2 <- createDataPartition(
+  y = df_diamonds$price,
+  p = 0.7,
+  list = FALSE
+)
+training_set2 <- df_diamonds[inTraining2,]
+test_set2 <- df_diamonds[-inTraining2,]
+```
+
+### Wpływ zmiennych na cenę diamentu
+
+``` r
+theme1 <- trellis.par.get()
+theme1$plot.symbol$col = rgb(.2, .2, .2, .4)
+theme1$plot.symbol$pch = 16
+theme1$plot.line$col = rgb(1, 0, 0, .7)
+theme1$plot.line$lwd <- 2
+trellis.par.set(theme1)
+
+featurePlot(x = df_diamonds[, c("carat", "depth", "table", "x", "y", "z")],
+            y = df_diamonds$price,
+            plot = "scatter",
+            layout = c(3, 2),
+            type = c("p", "smooth"),
+            span = .5)
+```
+
+![](/home/filip/IdeaProjects/EMD/R/lab3/uczenie_maszynowe_files/figure-markdown_github/unnamed-chunk-11-1.png)
+\#\#\# Regresor
+
+``` r
+glmnetCtrl <- trainControl(
+  method = "repeatedcv",
+  number = 10,
+  repeats = 10
+)
+
+glmnetFit <- train(
+  price ~ .,
+  data = training_set2,
+  method = "glmnet",
+  trControl = glmnetCtrl,
+  preProcess = c("center", "scale")
+)
+
+glmnetFit
+```
+
+    ## glmnet 
+    ## 
+    ## 37759 samples
+    ##     9 predictor
+    ## 
+    ## Pre-processing: centered (23), scaled (23) 
+    ## Resampling: Cross-Validated (10 fold, repeated 10 times) 
+    ## Summary of sample sizes: 33983, 33983, 33985, 33984, 33982, 33983, ... 
+    ## Resampling results across tuning parameters:
+    ## 
+    ##   alpha  lambda      RMSE      Rsquared   MAE      
+    ##   0.10     7.331607  1133.379  0.9189252   748.3490
+    ##   0.10    73.316067  1176.965  0.9130150   807.8232
+    ##   0.10   733.160670  1454.423  0.8729132   997.9205
+    ##   0.55     7.331607  1134.159  0.9188168   749.2572
+    ##   0.55    73.316067  1186.160  0.9118685   789.2220
+    ##   0.55   733.160670  1646.540  0.8479108  1041.4960
+    ##   1.00     7.331607  1135.570  0.9186157   750.3809
+    ##   1.00    73.316067  1204.503  0.9092026   791.5454
+    ##   1.00   733.160670  1711.517  0.8489686  1065.2755
+    ## 
+    ## RMSE was used to select the optimal model using the smallest value.
+    ## The final values used for the model were alpha = 0.1 and lambda = 7.331607.
+
+``` r
+glmnetPred <- predict(glmnetFit, newdata = test_set2)
+postResample(pred = glmnetPred, obs = test_set2$price)
+```
+
+    ##         RMSE     Rsquared          MAE 
+    ## 1128.8984885    0.9209418  746.1007980

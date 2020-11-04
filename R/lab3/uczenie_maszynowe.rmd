@@ -7,20 +7,25 @@ output:
         variant: markdown_github
 ---
 
-# Uczenie maszynowe w R - klasyfikacja
+# Uczenie maszynowe w R I
 
 ```{r setup, include = FALSE}
 library(caret)
+library(dplyr)
 library(modeldata)
+library(ggplot2)
 ```
 
-## Ładowanie danych
+## Zad 1 - klasyfikacja
+
+### Ładowanie danych
 ```{r}
 data(mlc_churn)
 churnData <- data.frame(mlc_churn)
+
 ```
 
-## Podział zbioru
+### Podział zbioru
 ```{r}
 set.seed(23)
 inTraining <- createDataPartition(
@@ -33,7 +38,7 @@ training_set <- churnData[inTraining,]
 test_set <- churnData[-inTraining,]
 ```
 
-## Klasyfikatory
+### Klasyfikatory
 
 ```{r}
 ctrl <- trainControl(
@@ -45,7 +50,7 @@ ctrl <- trainControl(
 )
 ```
 
-###  CART
+####  CART
 ```{r}
 
 cartGrid <- expand.grid(cp = seq(from = 0.0001, to = 0.01, length = 30))
@@ -68,7 +73,7 @@ cartPred <- predict(cartFit, newdata = test_set)
 confusionMatrix(data = cartPred, test_set$churn)
 ```
 
-### kNN
+#### kNN
 ```{r}
 knnGrid <- expand.grid(k = seq(from = 1, to = 13, by = 2))
 
@@ -90,7 +95,7 @@ knnPred <- predict(knnFit, newdata = test_set)
 confusionMatrix(data = knnPred, test_set$churn)
 ```
 
-## Porównanie
+### Porównanie
 
 ```{r}
 resamps <- resamples(list(CART = cartFit,
@@ -106,8 +111,60 @@ theme1$plot.line$lwd <- 2
 trellis.par.set(theme1)
 bwplot(resamps, layout = c(3, 1))
 ```
+## Zad 2 - regresja
 
+### Podział zbioru
 
+```{r}
+data(diamonds)
+df_diamonds <- data.frame(diamonds)
 
+inTraining2 <- createDataPartition(
+  y = df_diamonds$price,
+  p = 0.7,
+  list = FALSE
+)
+training_set2 <- df_diamonds[inTraining2,]
+test_set2 <- df_diamonds[-inTraining2,]
+```
 
+### Wpływ zmiennych na cenę diamentu
 
+```{r}
+theme1 <- trellis.par.get()
+theme1$plot.symbol$col = rgb(.2, .2, .2, .4)
+theme1$plot.symbol$pch = 16
+theme1$plot.line$col = rgb(1, 0, 0, .7)
+theme1$plot.line$lwd <- 2
+trellis.par.set(theme1)
+
+featurePlot(x = df_diamonds[, c("carat", "depth", "table", "x", "y", "z")],
+            y = df_diamonds$price,
+            plot = "scatter",
+            layout = c(3, 2),
+            type = c("p", "smooth"),
+            span = .5)
+```
+### Regresor
+```{r}
+glmnetCtrl <- trainControl(
+  method = "repeatedcv",
+  number = 10,
+  repeats = 10
+)
+
+glmnetFit <- train(
+  price ~ .,
+  data = training_set2,
+  method = "glmnet",
+  trControl = glmnetCtrl,
+  preProcess = c("center", "scale")
+)
+
+glmnetFit
+```
+
+```{r}
+glmnetPred <- predict(glmnetFit, newdata = test_set2)
+postResample(pred = glmnetPred, obs = test_set2$price)
+```
