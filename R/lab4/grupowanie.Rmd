@@ -1,0 +1,76 @@
+---
+title: "EMD_Zad2"
+author: "Wojciech Kupaj/Filip Bończyk"
+date: "01 12 2020"
+output:
+    md_document:
+        variant: markdown_github
+---
+
+## Wczytywanie danych i ładowanie bibliotek
+```{r setup, include=FALSE}
+library(factoextra)
+library(fpc)
+library(NbClust)
+
+set.seed(23)
+face <- rFace(1000, p=2, dMoNo=3)
+df = data.frame(x=face[,1], y=face[,2])
+labels = as.integer(attr(face,"grouping"))
+```
+
+
+```{r sum}
+ggplot(df, aes(x, y, color=factor(labels))) + 
+    geom_point() + 
+    theme_bw()
+```
+
+## Algorytm k-średnich
+```{r k_mean}
+km.res <- eclust(df, "kmeans", k = 6, nstart = 25, graph = F)
+fviz_cluster(km.res, df, stand=F, ellipse=F, show.clust.cent=T, geom="point", palette = "jco", ggtheme = theme_minimal())
+
+
+table(labels, km.res$cluster)
+
+clust_stats <- cluster.stats(d = dist(df), labels, km.res$cluster)
+clust_stats$corrected.rand
+```
+
+
+## Algorytm k-medoidów
+```{r k_m}
+pam.res <- eclust(df, "pam", k = 6, graph = F)
+fviz_cluster(pam.res, df, stand=F, ellipse=F, show.clust.cent=T, geom="point", palette = "jco", ggtheme = theme_minimal())
+
+table(labels, pam.res$cluster)
+
+clust_stats <- cluster.stats(d = dist(df), labels, pam.res$cluster)
+clust_stats$corrected.rand
+```
+
+
+
+## Algorytm AHC
+```{r ahc}
+hc.res <- eclust(df, "hclust", k = 6, hc_metric = "euclidean", hc_method = "ward.D2", graph = F)
+fviz_cluster(hc.res, df, stand=F, ellipse=F, show.clust.cent=T, geom="point", palette = "jco", ggtheme = theme_minimal())
+
+table(labels, hc.res$cluster)
+
+clust_stats <- cluster.stats(d = dist(df), labels, hc.res$cluster)
+clust_stats$corrected.rand
+```
+
+## Algorytm DBSCAN
+```{r dbscan}
+db.res <- fpc::dbscan(df, eps=1, MinPts=30)
+fviz_cluster(db.res, df, stand=F, ellipse=F, show.clust.cent=T, geom="point", palette="jco", ggtheme= theme_classic())
+
+
+table(labels, db.res$cluster)
+
+clust_stats <- cluster.stats(d = dist(df), labels, db.res$cluster)
+clust_stats$corrected.rand
+```
