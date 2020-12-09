@@ -11,34 +11,33 @@ library(shiny)
 
 # Define UI for application that draws a histogram
 shinyUI(
-    navbarPage('Pokedex',
+    navbarPage('Pokedex', 
         tabPanel('Porownanie',
                  fluidPage(
                      fluidRow(
                          column(12,
                             h1("Porownaj Pokemony"),
                             fluidRow(
-                                column(6,
-                                    selectInput("poke_1", "Wybierz:",NULL),
-                                    tableOutput('table_poke1'),
-                                    plotOutput("poke_1Plot")),
+                                column(3,
+                                    selectInput("poke1", "Wybierz:",NULL),
+                                    tableOutput('compare_table')),
                                 
-                                column(6,
-                                    selectInput("poke_2", "Wybierz:",NULL),
-                                    tableOutput('table_poke2'),
-                                    plotOutput("poke_2Plot"))
+                                column(4,
+                                    selectInput("poke2", "Wybierz:",NULL),
+                                    plotOutput("compare_plot"))
                             )
                          )
                      )
                  )
             ),
         tabPanel('Przegladaj',
+                 h1("Przegladaj Pokemony"),
                  dataTableOutput('table')
             ),
         tabPanel('Stworz reke',
-                 selectInput("poke_3", "Wybierz atrybut:",NULL),
-                 textOutput('text'),
-                 tableOutput('table_reka')
+                 h1("Wybierz atrybut do zbudowania reki"),
+                 selectInput("attr", "Wybierz:",NULL),
+                 tableOutput('hand_table')
         )
     )
 )
